@@ -1,32 +1,54 @@
+import React, { useEffect, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
-import { FFmpegKit } from 'ffmpeg-kit-react-native';
+import { StyleSheet, Text, View, ActivityIndicator } from 'react-native';
+import { FFmpegKit, ReturnCode } from 'ffmpeg-kit-react-native';
+import { Video, ResizeMode } from 'expo-av';
 
 export default function App() {
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [videoUri, setVideoUri] = useState(null);
 
-  FFmpegKit.execute('-i file1.mp4 -c:v mpeg4 file2.mp4').then(async (session) => {
-    const returnCode = await session.getReturnCode();
-  
-    if (ReturnCode.isSuccess(returnCode)) {
-      console.log('FFMPEG Success')
-      // SUCCESS
-  
-    } else if (ReturnCode.isCancel(returnCode)) {
-      console.log('FFMPEG CANCEL')
-      // CANCEL
-  
-    } else {
-      console.log('FFMPEG Error')
-      // ERROR
-  
+  useEffect(() => {
+    generateVideo();
+  }, []);
+
+  const generateVideo = async () => {
+    try {
+      // Execute FFmpeg command to generate video
+      const command = '-f lavfi -i testsrc=duration=5:size=1280x720:rate=120 test.mp4';
+      const session = await FFmpegKit.execute(command);
+      const returnCode = await session.getReturnCode();
+      console.log('returnCode',returnCode);
+      if (ReturnCode.isSuccess(returnCode)) {
+        console.log('FFMPEG Success');
+        // setVideoUri('file://path/to/your/generated/video.mp4'); // Replace with actual file path
+      } else if (ReturnCode.isCancel(returnCode)) {
+        console.log('FFMPEG CANCEL');
+        setError('FFMPEG command was cancelled.');
+      } else {
+        console.log('FFMPEG Error');
+        setError('An error occurred during FFmpeg execution.');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      setError('An error occurred.');
+    } finally {
+      setIsLoading(false);
     }
-  });
-
-  FFmpegKit.cancel();
+  };
 
   return (
     <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
+      {isLoading ? (
+        <ActivityIndicator size="large" color="#0000ff" />
+      ) : error ? (
+        <Text>{error}</Text>
+      ) : videoUri ? (
+        <Text>{videoUri}</Text>
+      ) : (
+        <Text>No video to display</Text>
+      )}
       <StatusBar style="auto" />
     </View>
   );
