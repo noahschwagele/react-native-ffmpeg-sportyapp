@@ -4,7 +4,7 @@ This project integrates FFMpegKit into a React Native application for video proc
 
 ## Setup Instructions
 
-1. Install FFMpegKit for React Native following the instructions provided in the [FFMpegKit documentation](https://github.com/tanersener/ffmpeg-kit#react-native).
+1. Install FFMpegKit for React Native following the instructions provided in the [FFMpegKit documentation]([https://github.com/tanersener/ffmpeg-kit#react-native](https://github.com/arthenica/ffmpeg-kit/tree/main/react-native)).
 
 2. Link the Android and iOS packages using the prebuilt projects. This ensures that the native modules are correctly linked to your React Native project.
 
