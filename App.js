@@ -1,54 +1,72 @@
 import React, { useEffect, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, ActivityIndicator } from 'react-native';
-import { FFmpegKit, ReturnCode } from 'ffmpeg-kit-react-native';
-
+import { StyleSheet, View, ActivityIndicator, Text } from 'react-native';
+import GoogleCast from 'react-native-google-cast';
+import { CastButton, useRemoteMediaClient } from 'react-native-google-cast';
+import { FFmpegKit, FFmpegKitConfig, ReturnCode } from 'ffmpeg-kit-react-native';
+import * as FileSystem from 'expo-file-system';
 
 export default function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [videoUri, setVideoUri] = useState(null);
+  const [imageUri, setImageUri] = useState(null);
+  const client = useRemoteMediaClient();
 
   useEffect(() => {
-    generateVideo();
-  }, []);
+    if (client) {
+      const intervalId = setInterval(() => {
+        generateImage();
+      }, 5000);
 
-  const generateVideo = async () => {
+      return () => clearInterval(intervalId);
+    }
+  }, [client]);
+
+  const generateImage = async () => {
     try {
-      // Execute FFmpeg command to generate video
-      const command = '-f lavfi -i testsrc=duration=5:size=1280x720:rate=120 test.mp4';
+      const timeNow = new Date();
+      const timeString = timeNow.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+
+      FFmpegKitConfig.setFontDirectory('/system/fonts')
+
+      const command = `-y -f lavfi -i color=c=white:s=1920x1080 -vf "drawtext=text='${timeString}':x=(w-text_w)/2:y=(h-text_h)/2:fontsize=48:fontcolor=black" -frames:v 1 ${FileSystem.cacheDirectory}scoreImage.png`;
       const session = await FFmpegKit.execute(command);
+
       const returnCode = await session.getReturnCode();
-      console.log('returnCode',returnCode);
-      if (ReturnCode.isSuccess(returnCode)) {
-        console.log('FFMPEG Success');
-        // setVideoUri('file://path/to/your/generated/video.mp4'); // Replace with actual file path
-      } else if (ReturnCode.isCancel(returnCode)) {
-        console.log('FFMPEG CANCEL');
-        setError('FFMPEG command was cancelled.');
-      } else {
-        console.log('FFMPEG Error');
-        setError('An error occurred during FFmpeg execution.');
+      if (!ReturnCode.isSuccess(returnCode)) {
+        setError('Failed to generate image.');
+        setIsLoading(false);
+        return;
       }
+
+      const imageUri = `${FileSystem.cacheDirectory}scoreImage.jpg`;
+      setImageUri(imageUri);
+
+      if (client) {
+        await client.loadMedia({
+          mediaInfo: {
+            contentUrl: imageUri,
+            contentType: 'image/*',
+          },
+        });
+      }
+
+      setIsLoading(false);
     } catch (error) {
-      console.error('Error:', error);
-      setError('An error occurred.');
-    } finally {
+      console.error('Error generating image:', error);
+      setError('An error occurred during image generation.');
       setIsLoading(false);
     }
   };
 
   return (
     <View style={styles.container}>
+      <CastButton style={{ width: 24, height: 24, tintColor: 'blue', marginRight: 20 }} />
       {isLoading ? (
         <ActivityIndicator size="large" color="#0000ff" />
       ) : error ? (
         <Text>{error}</Text>
-      ) : videoUri ? (
-        <Text>{videoUri}</Text>
-      ) : (
-        <Text>No video to display</Text>
-      )}
+      ) : null}
       <StatusBar style="auto" />
     </View>
   );
