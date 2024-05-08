@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, ActivityIndicator } from 'react-native';
 import { FFmpegKit, ReturnCode } from 'ffmpeg-kit-react-native';
-import { Video, ResizeMode } from 'expo-av';
+
 
 export default function App() {
   const [isLoading, setIsLoading] = useState(true);
