@@ -1,63 +1,63 @@
 import React, { useEffect, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, View, ActivityIndicator, Text } from 'react-native';
-import GoogleCast from 'react-native-google-cast';
 import { CastButton, useRemoteMediaClient } from 'react-native-google-cast';
 import { FFmpegKit, FFmpegKitConfig, ReturnCode } from 'ffmpeg-kit-react-native';
 import * as FileSystem from 'expo-file-system';
+import * as Network from 'expo-network';
 
 export default function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [imageUri, setImageUri] = useState(null);
   const client = useRemoteMediaClient();
-
+  
   useEffect(() => {
-    if (client) {
-      const intervalId = setInterval(() => {
-        generateImage();
-      }, 5000);
+    async function generateImage() {
+      try {
+        const timeNow = new Date();
+        const IpAddress = await Network.getIpAddressAsync();
+        console.log('FileSystem', FileSystem.cacheDirectory)
+        console.log('IpAddress', IpAddress)
+        const timeString = timeNow.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
 
-      return () => clearInterval(intervalId);
+        FFmpegKitConfig.setFontDirectory('/system/fonts')
+
+        const command = `-listen 1 -i rtmp://martin-riedl.de/stream01`;
+        const session = await FFmpegKit.execute(command);
+
+        const returnCode = await session.getReturnCode();
+        if (!ReturnCode.isSuccess(returnCode)) {
+          setError('Failed to generate Stream.');
+          setIsLoading(false);
+          return;
+        }
+
+        FFmpegKitConfig.enableLogCallback(log => {
+          const message = log.getMessage();
+        });
+
+        if (client) {
+          // const imageUri = `${FileSystem.cacheDirectory}scoreImage.jpg`;
+          // await client.loadMedia({
+          //   mediaInfo: {
+          //     contentUrl: imageUri,
+          //     contentType: 'image/*',
+          //   },
+          // });
+        }
+
+        setIsLoading(false);
+      } catch (error) {
+        console.error('Error generating Stream:', error);
+        setError('An error occurred during Stream generation.');
+        setIsLoading(false);
+      }
+    }
+
+    if (client) {
+      generateImage();
     }
   }, [client]);
-
-  const generateImage = async () => {
-    try {
-      const timeNow = new Date();
-      const timeString = timeNow.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-
-      FFmpegKitConfig.setFontDirectory('/system/fonts')
-
-      const command = `-y -f lavfi -i color=c=white:s=1920x1080 -vf "drawtext=text='${timeString}':x=(w-text_w)/2:y=(h-text_h)/2:fontsize=48:fontcolor=black" -frames:v 1 ${FileSystem.cacheDirectory}scoreImage.png`;
-      const session = await FFmpegKit.execute(command);
-
-      const returnCode = await session.getReturnCode();
-      if (!ReturnCode.isSuccess(returnCode)) {
-        setError('Failed to generate image.');
-        setIsLoading(false);
-        return;
-      }
-
-      const imageUri = `${FileSystem.cacheDirectory}scoreImage.jpg`;
-      setImageUri(imageUri);
-
-      if (client) {
-        await client.loadMedia({
-          mediaInfo: {
-            contentUrl: imageUri,
-            contentType: 'image/*',
-          },
-        });
-      }
-
-      setIsLoading(false);
-    } catch (error) {
-      console.error('Error generating image:', error);
-      setError('An error occurred during image generation.');
-      setIsLoading(false);
-    }
-  };
 
   return (
     <View style={styles.container}>
