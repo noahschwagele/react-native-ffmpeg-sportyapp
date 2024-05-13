@@ -1,28 +1,79 @@
 import React, { useEffect, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, View, ActivityIndicator, Text } from 'react-native';
+import { StyleSheet, View, ActivityIndicator, Text, PermissionsAndroid  } from 'react-native';
 import { CastButton, useRemoteMediaClient } from 'react-native-google-cast';
 import { FFmpegKit, FFmpegKitConfig, ReturnCode } from 'ffmpeg-kit-react-native';
 import * as FileSystem from 'expo-file-system';
 import * as Network from 'expo-network';
 
+
+
 export default function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const client = useRemoteMediaClient();
-  
   useEffect(() => {
+    async function requestStoragePermission() {
+      console.log('Requesting storage permission...');
+      try {
+        // Resetting permission
+        await PermissionsAndroid.requestMultiple([
+          PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+        ]);
+        
+        // Request permission again
+        const granted = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+          {
+            title: 'Storage Permission',
+            message: 'App needs access to your storage to save files.',
+            buttonNeutral: 'Ask Me Later',
+            buttonNegative: 'Cancel',
+            buttonPositive: 'OK',
+          }
+        );
+
+        console.log(granted)
+    
+        if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+          console.log('Storage permission granted');
+          // Permission granted, you can proceed with generating the image
+          generateImage();
+        } else {
+          console.log('Storage permission denied');
+          setError('Storage permission denied');
+          setIsLoading(false);
+        }
+      } catch (err) {
+        console.warn(err);
+        setError('Error requesting storage permission');
+        setIsLoading(false);
+      }
+    }
+    
+    async function generateImage() {
+      // Your image generation logic goes here
+    }
+
+    // Call the function to request storage permission when the component mounts
+    requestStoragePermission();
+  }, []); // Empty dependency array to ensure it only runs once
+
+
+  useEffect(() => {
+    
     async function generateImage() {
       try {
         const timeNow = new Date();
         const IpAddress = await Network.getIpAddressAsync();
         console.log('FileSystem', FileSystem.cacheDirectory)
+        console.log('FileSystem.bundleDirectory', FileSystem.bundleDirectory)
         console.log('IpAddress', IpAddress)
         const timeString = timeNow.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
 
         FFmpegKitConfig.setFontDirectory('/system/fonts')
 
-        const command = `-listen 1 -i rtmp://martin-riedl.de/stream01`;
+        const command = `-i https://sportyapp.co.za/assets/images/SportyAppLoading.png -codec: copy -start_number 0 -listen 1 -hls_list_size 0 output.m3u8`;
         const session = await FFmpegKit.execute(command);
 
         const returnCode = await session.getReturnCode();

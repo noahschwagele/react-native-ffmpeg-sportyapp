@@ -23,6 +23,9 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
+      "permissions": [
+        "android.permission.WRITE_EXTERNAL_STORAGE"
+      ],
       "package": "com.anonymous.sportyappffmpeg"
     },
     "web": {
@@ -36,5 +39,6 @@
     "plugins": [
       "@config-plugins/react-native-google-cast"
     ]
+    
   }
 }
