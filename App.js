@@ -2,10 +2,11 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, View, TextInput, Button } from 'react-native';
 import ChromeCast from './src/components/ChromeCast';
-import { useRemoteMediaClient } from 'react-native-google-cast';
+import { useRemoteMediaClient, useCastDevice } from 'react-native-google-cast';
 
 export default function App() {
   const client = useRemoteMediaClient();
+  // const clientTarget = useCastDevice().deviceId()
   
   // Player One
   const [playerOneName, setPlayerOneName] = useState('Player One');
