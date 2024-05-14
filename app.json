@@ -37,7 +37,9 @@
       }
     },
     "plugins": [
-      "@config-plugins/react-native-google-cast"
+      "@config-plugins/react-native-google-cast",{
+        "androidReceiverAppId": "5CB45E5A"
+      }
     ]
     
   }
