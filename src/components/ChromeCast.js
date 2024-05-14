@@ -3,7 +3,7 @@ import { CastButton, useRemoteMediaClient } from 'react-native-google-cast';
 
 export default function ChromeCast() {
   const client = useRemoteMediaClient();
-  const receiverUrl = 'http://sportyapp.co.za/test.html';
+  const receiverUrl = 'http://sportyapp.co.za/assets/images/SportyAppLoading.png';
 
   useEffect(() => {
     const loadReceiverUrl = async () => {
@@ -12,9 +12,8 @@ export default function ChromeCast() {
           await client.loadMedia({
             mediaInfo: {
               contentUrl: receiverUrl,
-              contentType: 'text/html'
+              contentType: 'image/*'
             },
-            autoplay: true, // Optional: autoplay the loaded content
           });
         }
       } catch (error) {
