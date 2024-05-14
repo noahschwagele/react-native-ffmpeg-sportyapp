@@ -10,10 +10,10 @@
   },
   "dependencies": {
     "@config-plugins/react-native-google-cast": "^7.0.0",
-    "@hromovp/react-native-static-server": "^0.5.5",
     "expo": "~50.0.17",
     "expo-dev-client": "~3.3.11",
     "expo-file-system": "~16.0.9",
+    "expo-http-server": "^0.1.11",
     "expo-network": "~5.8.0",
     "expo-status-bar": "~1.11.1",
     "expo-system-ui": "~2.9.4",
