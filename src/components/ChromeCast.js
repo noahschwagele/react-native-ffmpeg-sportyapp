@@ -1,10 +1,13 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { CastButton, useRemoteMediaClient, useCastChannel, useCastSession} from 'react-native-google-cast';
 
 
 export default function ChromeCast() {
   
-  const channel = useCastChannel('urn:x-cast:com.url.cast');
+  const channel = useCastChannel('urn:x-cast:com.url.cast',
+  useCallback((message) => {
+      console.log('Received message', message)
+  }, []));
   const client = useRemoteMediaClient();
   const session = useCastSession()
 
@@ -20,7 +23,7 @@ export default function ChromeCast() {
               url: 'http://example.com/'
             }
 
-              channel.sendMessage(msg)
+              await channel.sendMessage({ msg: 'welcome' })
               console.log('Sent message')
 
             console.log(channel)
@@ -34,7 +37,6 @@ export default function ChromeCast() {
       }
 
       if(session && client){
-        session.addChannel('urn:x-cast:com.url.cast')
         console.log('Session',session)
       }
 
