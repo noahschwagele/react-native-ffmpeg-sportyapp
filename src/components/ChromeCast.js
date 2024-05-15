@@ -4,29 +4,27 @@ import { CastButton, useRemoteMediaClient, useCastChannel, useCastSession} from 
 
 export default function ChromeCast() {
   
-  const channel = useCastChannel('urn:x-cast:com.url.cast',
-  useCallback((message) => {
-      console.log('Received message', message)
-  }, []));
+  const channel = useCastChannel('urn:x-cast:com.url.cast', message => console.log('Received message', message));
   const client = useRemoteMediaClient();
   const session = useCastSession()
 
   
   
   useEffect(() => {
+    console.log('client', client);
     const loadReceiverUrl = async () => {
       try {
         if (client && channel) { // Check if both client and channel are available
           if (client && channel.sendMessage) {
             const msg = {
               type: 'iframe',
-              url: 'http://example.com/'
+              url: 'https://sandbox.bisdesign.co.za/sportyappcoza/assets/images/SportyAppLoading.png'
             }
 
-              await channel.sendMessage(msg)
+              await channel.sendMessage('{"type":"iframe","url":"https:\/\/sportyapp.co.za\/scoreapi.php?view=tv&target=0a897bf3-377e-5bfd-8f4e-a70bdf23cdf7.local"}')
               console.log('Sent message')
 
-            console.log(channel)
+            console.log('channel', channel)
             console.log('Message sent');
           } else {
             console.error('sendMessage method is not available on the channel object.');
