@@ -23,7 +23,7 @@ export default function ChromeCast() {
               url: 'http://example.com/'
             }
 
-              await channel.sendMessage({ msg: 'welcome' })
+              await channel.sendMessage(msg)
               console.log('Sent message')
 
             console.log(channel)
